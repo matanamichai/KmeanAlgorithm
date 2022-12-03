@@ -1,126 +1,157 @@
 import math
 import sys
-import random
-
 
 class Kmeans:
+    DEFAULT_ITERATIONS = "200"
+    EPSILON = 0.001
+    MAX_ITERATIONS = 1000
 
-    def __init__(self, i_numberOfK, i_inputData,i_iter =200):
-        self.m_numberOfK = i_numberOfK
-        self.e = 0.001
-        self.m_maxIter = i_iter
-        self.m_iterationCount = 0
-        self.m_inputData = i_inputData
-        self.m_dataPoint = []
-        self.m_kCenters = []
-        self.m_bigestDif = -1
-        self.readDataInput()
-        self.initializeSelectOfKCenter()
+    def __init__(self, k, input_file_name, iterations):
+        self.data_points = self.parse_data_file(input_file_name)
+        self.validate_parameters(k, self.data_points, iterations)
+        self.iterations = int(iterations)
+        self.clusters = self.create_clusters(int(k), self.data_points)
+        
 
-    def readDataInput(self):
-        with open(self.m_inputData, 'r') as file:
-            while True:
-                line = file.readline()
-                if not line:
-                    break
-                point = []
-                for num in line.replace("\n","").split(","):
-                    point.append(float(num))
-                self.m_dataPoint.append(point)
+    def validate_parameters(self, k, data_points, iterations):
+        if not k.isdecimal():
+            raise ValueError("Invalid number of clusters!")
 
-    def initializeSelectOfKCenter(self):
-        kCentersPoint = self.m_dataPoint[:self.m_numberOfK]
-        for kCenter in kCentersPoint:
-            self.m_kCenters.append(Center(kCenter))
+        k = int(k)
+        if k < 1 or k > len(data_points):
+            raise ValueError("Invalid number of clusters!")
 
-    def iteration(self):
-        self.m_bigestDif = -1
-        self.m_iterationCount += 1
-        self.assignAllPoint()
-        self.updateAllKCenter()
+        if not iterations.isdecimal():
+            raise ValueError("Invalid number of iterations!")
 
-    def calculateDistance(self,xArray,yArry):
-        sum = 0
-        for i in range(len(xArray)):
-            dif = xArray[i] - yArry.m_kLocation[i]
-            sum += pow(dif,2)
-        return math.sqrt(sum)
+        iterations = int(iterations)
+        if iterations < 1 or iterations > self.MAX_ITERATIONS:
+            raise ValueError("Invalid number of iterations!")
 
-    def assignXToClosestK(self,xArray):
-        minDiff = sys.maxsize
-        closestK = None
-        for k in self.m_kCenters:
-            tempDif =self.calculateDistance(xArray,k)
-            if tempDif<minDiff:
-                closestK = k
-                minDiff = tempDif
-        closestK.addDataPoint(xArray)
-        return minDiff
 
-    def assignAllPoint(self):
-        for k in self.m_kCenters:
-            k.clearDataPoint()
-        for point in self.m_dataPoint:
-            tempDif = self.assignXToClosestK(point)
-            if tempDif>self.m_bigestDif:
-                self.m_bigestDif = tempDif
+    def parse_data_file(self, input_file_name):
+        data_points = []
+        with open(input_file_name, 'r') as file:
+            for line in file.readlines():
+                data_points.append(self.parse_single_point(line))
 
-    def updateAllKCenter(self):
-        for k in self.m_kCenters:
-            k.updateLocationOfK()
+        return data_points
+    
+    @staticmethod
+    def parse_single_point(point):
+        return [float(num) for num in point.replace("\n", "").split(",")]
 
-    def isAlgoEnd(self):
-        return self.ifDoneLeftItertion() or self.ifWeCloseEnough()
+    @staticmethod
+    def create_clusters(k, data_points):
+        clusters = []
+        for data_point in data_points[:k]:
+            clusters.append(Cluster(data_point))
+        return clusters
 
-    def ifDoneLeftItertion(self):
-        return self.m_iterationCount >= self.m_maxIter
 
-    def ifWeCloseEnough(self):
-        if self.m_bigestDif != -1:
-            return self.m_bigestDif<self.e
+    def find_k_means(self):
+        while self.iterations > 0 and self.centeroids_grater_than_epsilon():
+            self.remove_points_from_clusters()
+            self.add_points_to_closest_cluster()
+            self.update_clusters_centeroids()
+
+            self.iterations -= 1
+        
+    def add_points_to_closest_cluster(self):
+        for data_point in self.data_points:
+            self.add_point_to_closest_cluster(data_point)
+        
+    def add_point_to_closest_cluster(self, data_point):
+        closest_cluster = self.clusters[0]
+        distance_to_closest_cluster = closest_cluster.calc_distance(data_point)
+        for cluster in self.clusters[1:]:
+            distance = cluster.calc_distance(data_point)
+            if distance < distance_to_closest_cluster:
+                closest_cluster = cluster
+                distance_to_closest_cluster = distance
+    
+        closest_cluster.add_point(data_point)
+
+    def update_clusters_centeroids(self):
+        for cluster in self.clusters:
+            cluster.update_centeroid()
+
+    def remove_points_from_clusters(self):
+        for cluster in self.clusters:
+            cluster.remove_points()
+
+    def centeroids_grater_than_epsilon(self):
+        for cluster in self.clusters:
+            if cluster.centeroids_delta_grater_than_epsilon(self.EPSILON):
+                return True
+
         return False
 
-    def printCenters(self):
-        for k in self.m_kCenters:
-            for i in range(len(k.m_kLocation)):
-                if i < len(k.m_kLocation)-1:
-                    print(f"{k.m_kLocation[i]:.4f}",end=",")
-                else:
-                    print(f"{k.m_kLocation[i]:.4f}")
-
-class Center:
-    def __init__(self,i_kLocation):
-        self.m_kLocation = i_kLocation
-        self.m_kDataPoint = []
-        self.m_pointlen = len(self.m_kLocation)
-
-    def updateLocationOfK(self):
-        if len(self.m_kDataPoint) > 0:
-            for i in range(self.m_pointlen):
-                sum = 0
-                for point in self.m_kDataPoint:
-                    sum += point[i]
-                sum /= len(self.m_kDataPoint)
-                self.m_kLocation[i] = sum
-
-    def clearDataPoint(self):
-        self.m_kDataPoint = []
+    def __repr__(self):
+        return "\n".join([str(cluster) for cluster in self.clusters]) + "\n"
 
 
-    def addDataPoint(self,i_point):
-        self.m_kDataPoint.append(i_point)
+class Cluster:
+    def __init__(self, centeroid):
+        self.current_centeroid = centeroid
+        self.previous_centeroid = None
+        self.data_points = []
+
+    def add_point(self, point):
+        self.data_points.append(point)
+
+    def calc_distance(self, point):
+        delta = 0
+        for i, j in zip(self.current_centeroid, point):
+            delta += pow(i - j, 2)
+
+        return math.sqrt(delta)
+
+    def update_centeroid(self):
+        if len(self.data_points) == 0:
+            return 
+        
+        self.previous_centeroid = self.current_centeroid
+        
+        # Transpose the self.data_points matrix.
+        # For example:
+        #      From - [[a_1, a_2, a_3], [b_1, b_2, b_3], [c_1, c_2, c_3]] 
+        #      To   - [[a_1, b_1, c_1], [a_2, b_2, c_2], [a_3, b_3, c_3]]
+        data_points_transpose = list(map(list, zip(*self.data_points)))
+        self.current_centeroid = [(1 / len(self.data_points)) * sum(i) for i in data_points_transpose]
+
+    def remove_points(self):
+        self.data_points = []
+
+    def centeroids_delta_grater_than_epsilon(self, epsilon):
+        if self.previous_centeroid is None:
+            return True
+
+        return self.calc_distance(self.previous_centeroid) > epsilon
+
+    def __repr__(self):
+        return ",".join([f"{round(i, 4)}" for i in self.current_centeroid])
+
 
 def main():
-    if(len(sys.argv) == 4):
-        kmeans = Kmeans(int(sys.argv[1]),sys.argv[3],int(sys.argv[2]))
-    else:
-        kmeans = Kmeans(int(sys.argv[1]),sys.argv[2])
+    k = sys.argv[1]
 
-    while not kmeans.isAlgoEnd():
-        kmeans.iteration()
-    kmeans.printCenters()
-# Press the green button in the gutter to run the script.
+    if (len(sys.argv) == 4): 
+        iterations = sys.argv[2]
+        input_file_name = sys.argv[3]
+    else:
+        iterations = Kmeans.DEFAULT_ITERATIONS
+        input_file_name = sys.argv[2]
+
+    try:
+        kmeans = Kmeans(k, input_file_name, iterations)
+    except ValueError as e:
+        print(e)
+        return
+
+    kmeans.find_k_means()
+    print(kmeans)
+
+
 if __name__ == '__main__':
     main()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
