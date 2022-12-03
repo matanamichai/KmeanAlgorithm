@@ -130,7 +130,7 @@ class Cluster:
         return self.calc_distance(self.previous_centeroid) > epsilon
 
     def __repr__(self):
-        return ",".join([f"{round(i, 4)}" for i in self.current_centeroid])
+        return ",".join([f"{round(i, 4):.4f}" for i in self.current_centeroid])
 
 
 def main():
