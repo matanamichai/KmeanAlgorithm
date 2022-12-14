@@ -87,7 +87,7 @@ class Kmeans:
 
         return False
 
-    def __repr__(self):
+    def __str__(self):
         return "\n".join([str(cluster) for cluster in self.clusters]) + "\n"
 
 
@@ -129,7 +129,7 @@ class Cluster:
 
         return self.calc_distance(self.previous_centeroid) > epsilon
 
-    def __repr__(self):
+    def __str__(self):
         return ",".join([f"{round(i, 4):.4f}" for i in self.current_centeroid])
 
 
