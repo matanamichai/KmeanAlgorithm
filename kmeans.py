@@ -18,14 +18,14 @@ class Kmeans:
             raise ValueError("Invalid number of clusters!")
 
         k = int(k)
-        if k < 1 or k > len(data_points):
+        if k <= 1 or k >= len(data_points):
             raise ValueError("Invalid number of clusters!")
 
         if not iterations.isdecimal():
             raise ValueError("Invalid number of iterations!")
 
         iterations = int(iterations)
-        if iterations < 1 or iterations > self.MAX_ITERATIONS:
+        if iterations <= 1 or iterations >= self.MAX_ITERATIONS:
             raise ValueError("Invalid number of iterations!")
 
 
