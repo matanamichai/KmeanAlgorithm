@@ -18,14 +18,14 @@ class Kmeans:
             raise ValueError("Invalid number of clusters!")
 
         k = int(k)
-        if k < 1 or k > len(data_points):
+        if k <= 1 or k >= len(data_points):
             raise ValueError("Invalid number of clusters!")
 
         if not iterations.isdecimal():
             raise ValueError("Invalid number of iterations!")
 
         iterations = int(iterations)
-        if iterations < 1 or iterations > self.MAX_ITERATIONS:
+        if iterations <= 1 or iterations >= self.MAX_ITERATIONS:
             raise ValueError("Invalid number of iterations!")
 
 
@@ -87,7 +87,7 @@ class Kmeans:
 
         return False
 
-    def __repr__(self):
+    def __str__(self):
         return "\n".join([str(cluster) for cluster in self.clusters]) + "\n"
 
 
@@ -129,7 +129,7 @@ class Cluster:
 
         return self.calc_distance(self.previous_centeroid) > epsilon
 
-    def __repr__(self):
+    def __str__(self):
         return ",".join([f"{round(i, 4):.4f}" for i in self.current_centeroid])
 
 
