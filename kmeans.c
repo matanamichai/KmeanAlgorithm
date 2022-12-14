@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define  _POSIX_C_SOURCE 200809L
 #define MAX_ITER 1000
@@ -18,15 +19,19 @@ typedef struct vector
     struct vector *next;
 } vector ;
 
-vector *fillDataPoint();
-int validateIter(char *iter);
-int isNaturalNumber(char *c);
-int isdigit(int);
-int validateK(char *k, vector *pointsVector);
+// Structs
 int countPointsInVector(vector *pointsVector);
 void printVector(vector*);
 void printCord(cord*);
 
+// Algorithem 
+vector *fillDataPoint();
+vector *initializeKCenter(int k,vector *pointsVector);
+
+// Validations
+int validateIter(char *iter);
+int isNaturalNumber(char *c);
+int validateK(char *k, vector *pointsVector);
 
 vector *fillDataPoint(){
     vector *head_vec, *curr_vec, *next_vec;
@@ -141,9 +146,53 @@ int isNaturalNumber(char *c) {
     return 0;
 }
 
+vector *initializeKCenter(int k, vector *points_vector) {
+    vector *head_vec, *curr_vec, *next_vec, *points_vector_vector;
+    cord *head_cord, *curr_cord, *next_cord, *points_vector_cord;
+
+    head_cord = malloc(sizeof(cord));
+    curr_cord = head_cord;
+    curr_cord->next = NULL;
+
+    head_vec = malloc(sizeof(vector));
+    curr_vec = head_vec;
+    curr_vec->next = NULL;
+
+    points_vector_vector = points_vector;
+    points_vector_cord = points_vector_vector->cords;
+
+    while (k > 0)
+    {
+        while (points_vector_cord->next != NULL)
+        {
+            curr_cord->value = points_vector_cord->value;
+            curr_cord->next = malloc(sizeof(cord));
+            curr_cord = curr_cord->next;
+            curr_cord->next = NULL;
+            points_vector_cord = points_vector_cord->next;
+        }
+
+        // last element dont need to allocate new cord
+        curr_cord->value = points_vector_cord->value;
+
+        points_vector_vector = points_vector_vector->next;
+        points_vector_cord = points_vector_vector->cords;
+
+        curr_vec->cords = head_cord;
+        head_cord = malloc(sizeof(cord));
+        curr_cord = head_cord;
+        curr_cord->next = NULL;
+        curr_vec->next = malloc(sizeof(vector));
+        curr_vec = curr_vec->next;
+        k--;
+    }
+
+    return head_vec;
+}
+
 int main(int argc, char *argv[]){
     vector *pointsVector;
-    vector *KCenterVector;
+    vector *kCenterVector;
     int maxOfIter;
     int valid;
     int k;
@@ -168,6 +217,9 @@ int main(int argc, char *argv[]){
 
     k = atoi(argv[1]);
 
-    printVector(pointsVector);   
+    // printVector(pointsVector);
+
+    kCenterVector = initializeKCenter(k, pointsVector);
+    printVector(kCenterVector);
     return 0;
 }
