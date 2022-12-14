@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
 typedef struct
 {
     double value;
@@ -15,6 +14,8 @@ typedef struct
     struct vector *next;
     struct cord *cords;
 } vector;
+vector *fillDataPoint();
+vector *initializeKCenter(int,vector *);
 
 vector *fillDataPoint(){
     vector *head_vec, *curr_vec, *next_vec;
@@ -54,17 +55,55 @@ vector *fillDataPoint(){
 
 }
 
+vector *initializeKCenter(int numberOfKCenter,vector *pointsVector){
+    vector *head_vec, *curr_vec, *next_vec;
+    cord *head_cord, *curr_cord, *next_cord;
+
+    head_cord = malloc(sizeof(cord));
+    curr_cord = head_cord;
+    curr_cord->next = NULL;
+
+    head_vec = malloc(sizeof(vector));
+    curr_vec = head_vec;
+    curr_vec->next = NULL;
+    while (numberOfKCenter>0)
+    {
+        while (((cord*)(pointsVector->cords)) !=NULL)
+        {
+            curr_cord ->value = ((cord*)(pointsVector->cords))-> value;
+            curr_cord->next = malloc(sizeof(cord));
+            curr_cord = curr_cord->next;
+            pointsVector->cords = ((cord*)(pointsVector->cords))->next;
+        }
+
+        pointsVector = pointsVector->next;
+        curr_vec ->cords = head_cord;
+        head_cord = malloc(sizeof(cord));
+        curr_cord = head_cord;
+        curr_cord->next = NULL;
+        curr_vec->next = malloc(sizeof(vector));
+        curr_vec = curr_vec->next;
+        numberOfKCenter--;
+    }
+    return head_vec;
+    
+}
 
 
 int main(int argc, char *argv[]){
     struct vector *headVector;
+    struct vector *KCenterVector;
+    int numberOfKCenter;
     int maxOfIter;
     if (argc > 2){
         maxOfIter = atoi(argv[2]);
     }
     else{
         maxOfIter = 200;
+
     }
-    
+    numberOfKCenter = atoi(argv[1]);
+
     headVector = fillDataPoint();
+    KCenterVector = initializeKCenter(numberOfKCenter,headVector);
 }
