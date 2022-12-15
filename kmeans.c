@@ -20,16 +20,12 @@ typedef struct vector
     struct vector *next;
 } vector ;
 
-// Structs
 int countPointsInVector(vector *pointsVector);
 void printVector(vector*);
 void printCord(cord*);
 
-// Algorithem 
 vector *fillDataPoint();
-vector **initializeKCenter(int k,vector *pointsVector);
 
-// Validations
 int validateIter(char *iter);
 int isNaturalNumber(char *c);
 int validateK(char *k, vector *pointsVector);
@@ -147,7 +143,7 @@ int isNaturalNumber(char *c) {
     return 0;
 }
 
-vector **initializeKCenter(int k, vector *points_vector) {
+cord **initializeKCenter(int k, vector *points_vector) {
     vector *points_vector_vector;
     cord **clusters;
     cord *head_cord, *curr_cord, *next_cord, *points_vector_cord;
@@ -174,7 +170,6 @@ vector **initializeKCenter(int k, vector *points_vector) {
             points_vector_cord = points_vector_cord->next;
         }
 
-        // last element dont need to allocate new cord
         curr_cord->value = points_vector_cord->value;
 
         points_vector_vector = points_vector_vector->next;
@@ -192,6 +187,37 @@ vector **initializeKCenter(int k, vector *points_vector) {
 
 int num_of_cords_in_cord(cord * c) {
     return 3;
+}
+cord **normalize_updated_cluster(cord **updated_clusters, int *num_of_cords_in_cluster,int k){
+    cord *curr_cord;
+    int i;
+    for(i=0;i<k;i++){
+        curr_cord = updated_clusters[i];
+        while (curr_cord !=  NULL)
+        {
+            curr_cord->value /= num_of_cords_in_cluster[i];
+            curr_cord = curr_cord->next; 
+        }   
+    }
+
+}
+void add_point_to_cluster(cord *points_vector_cords ,cord *cluster_cord, int l){
+
+    int i;
+    for(i=0; i<l;i++){
+        cluster_cord->value = (cluster_cord->value) +(points_vector_cords->value);
+        cluster_cord = cluster_cord->next;
+        points_vector_cords = points_vector_cords->next;
+    }
+}
+double calc_distance(cord *cluster, cord *cords){
+    double distance = 0;
+    while(cords != NULL){
+        distance += pow((cords->value-cluster->value),2.0);
+        cords = cords->next;
+        cluster = cluster->next;
+    }
+    return sqrt(distance);
 }
 
 cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
@@ -232,12 +258,15 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
 
         add_point_to_cluster(points_vector->cords, updated_clusters[min_index], l);
         num_of_cords_in_cluster[min_index]++;
-
+        min_distance = __DBL_MAX__,
         points_vector = points_vector->next;
-    }
-
-    return normalize_updated_cluster(updated_clusters, num_of_cords_in_cluster);
+    } 
+    normalize_updated_cluster(updated_clusters, num_of_cords_in_cluster,k);
+    return updated_clusters;
 }
+ int check_epsilon_value(cord **clusters,cord **updated_clusters){
+    return 0;
+ }
 
 int main(int argc, char *argv[]){
     vector *pointsVector;
@@ -268,18 +297,17 @@ int main(int argc, char *argv[]){
     k = atoi(argv[1]);
 
     clusters = initializeKCenter(k, pointsVector);
-    // printCordsArray(kCenterVector) -> to implement
     
     while (maxOfIter > 0) {
         updated_clusters = create_updated_cluster(clusters, k, pointsVector);
-        if (check_epsilon_value(clusters, updated_clusters, EPSILON)) {
+        if (check_epsilon_value(clusters, updated_clusters)) {
             clusters = updated_clusters;
             break;
         }
 
         clusters = updated_clusters;
+        maxOfIter -= 1;
     }
 
-    // printCordsArray(clusters) -> to implement
     return 0;
 }
