@@ -6,6 +6,7 @@
 
 #define  _POSIX_C_SOURCE 200809L
 #define MAX_ITER 1000
+#define EPSILON 0.0001
 
 typedef struct cord
 {
@@ -26,7 +27,7 @@ void printCord(cord*);
 
 // Algorithem 
 vector *fillDataPoint();
-vector *initializeKCenter(int k,vector *pointsVector);
+vector **initializeKCenter(int k,vector *pointsVector);
 
 // Validations
 int validateIter(char *iter);
@@ -146,17 +147,18 @@ int isNaturalNumber(char *c) {
     return 0;
 }
 
-vector *initializeKCenter(int k, vector *points_vector) {
-    vector *head_vec, *curr_vec, *next_vec, *points_vector_vector;
+vector **initializeKCenter(int k, vector *points_vector) {
+    vector *points_vector_vector;
+    cord **clusters;
     cord *head_cord, *curr_cord, *next_cord, *points_vector_cord;
+    int i = 0;
 
     head_cord = malloc(sizeof(cord));
     curr_cord = head_cord;
     curr_cord->next = NULL;
 
-    head_vec = malloc(sizeof(vector));
-    curr_vec = head_vec;
-    curr_vec->next = NULL;
+    clusters = malloc(sizeof(k) * sizeof(cord));
+    clusters[i] = head_cord;
 
     points_vector_vector = points_vector;
     points_vector_cord = points_vector_vector->cords;
@@ -178,21 +180,69 @@ vector *initializeKCenter(int k, vector *points_vector) {
         points_vector_vector = points_vector_vector->next;
         points_vector_cord = points_vector_vector->cords;
 
-        curr_vec->cords = head_cord;
         head_cord = malloc(sizeof(cord));
         curr_cord = head_cord;
         curr_cord->next = NULL;
-        curr_vec->next = malloc(sizeof(vector));
-        curr_vec = curr_vec->next;
+        clusters[++i] = head_cord;
         k--;
     }
 
-    return head_vec;
+    return clusters;
+}
+
+int num_of_cords_in_cord(cord * c) {
+    return 3;
+}
+
+cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
+    cord **updated_clusters;
+    cord *head_cord, *curr_cord, *next_cord;
+    int *num_of_cords_in_cluster;
+    int i, j, min_index, l = num_of_cords_in_cord(points_vector->cords);
+    double min_distance = __DBL_MAX__, current_distance;
+
+    updated_clusters = malloc(sizeof(k) * sizeof(cord));
+    num_of_cords_in_cluster = malloc(sizeof(int) * k);
+
+    for (i = 0; i < k; i++) {
+        head_cord = malloc(sizeof(cord));
+        curr_cord = head_cord;
+        curr_cord->next = NULL;
+        
+        for (j = 0; j < l - 1; j++) {
+            curr_cord->value = 0;
+            curr_cord->next = malloc(sizeof(cord));
+            curr_cord = curr_cord->next;
+            curr_cord->next = NULL;
+        }
+        curr_cord->value = 0;
+
+        updated_clusters[i] = head_cord;
+        num_of_cords_in_cluster[i] = 0;
+    }
+
+    while (points_vector->next != NULL) {
+        for (i = 0; i < k; i++) {
+            current_distance = calc_distance(clusters[i], points_vector->cords);
+            if (current_distance < min_distance) {
+                min_index = i;
+                min_distance = current_distance;
+            }
+        }
+
+        add_point_to_cluster(points_vector->cords, updated_clusters[min_index], l);
+        num_of_cords_in_cluster[min_index]++;
+
+        points_vector = points_vector->next;
+    }
+
+    return normalize_updated_cluster(updated_clusters, num_of_cords_in_cluster);
 }
 
 int main(int argc, char *argv[]){
     vector *pointsVector;
-    vector *kCenterVector;
+    cord **clusters;
+    cord **updated_clusters;
     int maxOfIter;
     int valid;
     int k;
@@ -217,9 +267,19 @@ int main(int argc, char *argv[]){
 
     k = atoi(argv[1]);
 
-    // printVector(pointsVector);
+    clusters = initializeKCenter(k, pointsVector);
+    // printCordsArray(kCenterVector) -> to implement
+    
+    while (maxOfIter > 0) {
+        updated_clusters = create_updated_cluster(clusters, k, pointsVector);
+        if (check_epsilon_value(clusters, updated_clusters, EPSILON)) {
+            clusters = updated_clusters;
+            break;
+        }
 
-    kCenterVector = initializeKCenter(k, pointsVector);
-    printVector(kCenterVector);
+        clusters = updated_clusters;
+    }
+
+    // printCordsArray(clusters) -> to implement
     return 0;
 }
