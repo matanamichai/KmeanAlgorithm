@@ -27,7 +27,7 @@ double calc_distance(cord *first_cord, cord *second_cord);
 
 vector *fillDataPoint();
 cord **initializeKCenter(int k, vector *points_vector);
-cord **normalize_updated_cluster(cord **updated_clusters, int *num_of_cords_in_cluster,int k);
+void normalize_updated_cluster(cord **updated_clusters, int *num_of_cords_in_cluster,int k);
 void add_point_to_cluster(cord *points_vector_cords, cord *cluster_cord, int l);
 int check_epsilon_value(cord **clusters, cord **updated_clusters, int k);
 
@@ -40,8 +40,8 @@ void free_cord(cord *c);
 void free_cords_array(cord **arr, int k);
 
 vector *fillDataPoint(){
-    vector *head_vec, *curr_vec, *next_vec;
-    cord *head_cord, *curr_cord, *next_cord;
+    vector *head_vec, *curr_vec;
+    cord *head_cord, *curr_cord;
     double n;
     char c;
 
@@ -139,7 +139,7 @@ int countPointsInVector(vector *v) {
     return counter;
 }
 
-// returns 0 if it is a natural number, and 1 otherwise
+/* returns 0 if it is a natural number, and 1 otherwise */ 
 int isNaturalNumber(char *c) {
     while (*c != '\0') {
         if (isdigit(*c) == 0) {
@@ -155,7 +155,7 @@ int isNaturalNumber(char *c) {
 cord **initializeKCenter(int k, vector *points_vector) {
     vector *points_vector_vector;
     cord **clusters;
-    cord *head_cord, *curr_cord, *next_cord, *points_vector_cord;
+    cord *head_cord, *curr_cord, *points_vector_cord;
     int i = 0;
 
     head_cord = malloc(sizeof(cord));
@@ -205,7 +205,7 @@ int num_of_cords_in_cord(cord *c) {
     return counter;
 }
 
-cord **normalize_updated_cluster(cord **updated_clusters, int *num_of_cords_in_cluster, int k) {
+void normalize_updated_cluster(cord **updated_clusters, int *num_of_cords_in_cluster, int k) {
     cord *curr_cord;
     int i;
 
@@ -244,7 +244,7 @@ double calc_distance(cord *first_cord, cord *second_cord) {
 
 cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     cord **updated_clusters;
-    cord *head_cord, *curr_cord, *next_cord;
+    cord *head_cord, *curr_cord;
     int *num_of_cords_in_cluster;
     int i, j, min_index, l = num_of_cords_in_cord(points_vector->cords);
     double min_distance, current_distance;
@@ -289,9 +289,8 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     return updated_clusters;
 }
 
-// returns 0 if we should do another iteration according to the epsilon value
+/*returns 0 if we should do another iteration according to the epsilon value*/
 int check_epsilon_value(cord **clusters, cord **updated_clusters, int k) {
-    int valid = 0;
     int i;
     double distance;
 
