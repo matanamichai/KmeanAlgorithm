@@ -73,11 +73,13 @@ vector *fillDataPoint(){
         curr_cord = curr_cord->next;
         curr_cord->next = NULL;
     }
+
+    free_cord(curr_cord);
     return head_vec;
 }
 
 void printVector(vector *v) {
-    while (v->next != NULL) {
+    while (v != NULL) {
         printCord(v->cords);
         v = v->next;
     }
@@ -191,6 +193,7 @@ cord **initializeKCenter(int k, vector *points_vector) {
         k--;
     }
 
+    free_cord(head_cord);
     return clusters;
 }
 
@@ -324,12 +327,16 @@ void free_vector(vector *v) {
         v = v->next;
         free(tmp);
     }
+
+    free(v);
 }
 
 void free_cords_array(cord **arr, int len) {
     while (--len >= 0) {
         free_cord(arr[len]);
     }
+
+    free(arr);
 }
 
 void free_cord(cord *c) {
@@ -376,10 +383,12 @@ int main(int argc, char *argv[]){
     while (maxOfIter > 0) {
         updated_clusters = create_updated_cluster(clusters, k, pointsVector);
         if (check_epsilon_value(clusters, updated_clusters, k)) {
+            free_cords_array(clusters, k);
             clusters = updated_clusters;
             break;
         }
 
+        free_cords_array(clusters, k);
         clusters = updated_clusters;
         maxOfIter -= 1;
     }
