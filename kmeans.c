@@ -35,6 +35,10 @@ int validateIter(char *iter);
 int isNaturalNumber(char *c);
 int validateK(char *k, vector *pointsVector);
 
+void free_vector(vector *v);
+void free_cord(cord *c);
+void free_cords_array(cord **arr, int k);
+
 vector *fillDataPoint(){
     vector *head_vec, *curr_vec, *next_vec;
     cord *head_cord, *curr_cord, *next_cord;
@@ -243,7 +247,7 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     cord *head_cord, *curr_cord, *next_cord;
     int *num_of_cords_in_cluster;
     int i, j, min_index, l = num_of_cords_in_cord(points_vector->cords);
-    double min_distance = __DBL_MAX__, current_distance;
+    double min_distance, current_distance;
 
     updated_clusters = malloc(sizeof(k) * sizeof(cord));
     num_of_cords_in_cluster = malloc(sizeof(int) * k);
@@ -266,6 +270,8 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     }
 
     while (points_vector->next != NULL) {
+        min_distance = __DBL_MAX__;
+
         for (i = 0; i < k; i++) {
             current_distance = calc_distance(clusters[i], points_vector->cords);
             if (current_distance < min_distance) {
@@ -276,7 +282,6 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
 
         add_point_to_cluster(points_vector->cords, updated_clusters[min_index], l);
         num_of_cords_in_cluster[min_index]++;
-        min_distance = __DBL_MAX__,
         points_vector = points_vector->next;
     } 
 
@@ -284,7 +289,7 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     return updated_clusters;
 }
 
-// returns 1 if we should do another iteration according to the epsilon value
+// returns 0 if we should do another iteration according to the epsilon value
 int check_epsilon_value(cord **clusters, cord **updated_clusters, int k) {
     int valid = 0;
     int i;
@@ -310,6 +315,33 @@ void print_cords_array(cord **cords, int len) {
     printf("\n");
 }
 
+void free_vector(vector *v) {
+    vector *tmp;
+
+    while (v != NULL) {
+        tmp = v;
+        free_cord(tmp->cords);
+        v = v->next;
+        free(tmp);
+    }
+}
+
+void free_cords_array(cord **arr, int len) {
+    while (--len >= 0) {
+        free_cord(arr[len]);
+    }
+}
+
+void free_cord(cord *c) {
+    cord *tmp;
+
+    while (c != NULL) {
+        tmp = c;
+        c = c->next;
+        free(tmp);
+    }
+}
+
 int main(int argc, char *argv[]){
     vector *pointsVector;
     cord **clusters;
@@ -333,6 +365,7 @@ int main(int argc, char *argv[]){
     pointsVector = fillDataPoint();
     valid = validateK(argv[1], pointsVector);
     if (valid != 0) {
+        free_vector(pointsVector);
         return 1;
     }
 
@@ -352,5 +385,10 @@ int main(int argc, char *argv[]){
     }
 
     print_cords_array(updated_clusters, k);
+    
+    free_vector(pointsVector);
+    free_cords_array(clusters, k);
+    free_cords_array(updated_clusters, k);
+
     return 0;
 }
