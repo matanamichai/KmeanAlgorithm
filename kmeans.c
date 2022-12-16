@@ -314,8 +314,6 @@ void print_cords_array(cord **cords, int len) {
     for (i = 0; i < len; i++) {
         printCord(cords[i]);
     }
-
-    printf("\n");
 }
 
 void free_vector(vector *v) {

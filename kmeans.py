@@ -88,7 +88,7 @@ class Kmeans:
         return False
 
     def __str__(self):
-        return "\n".join([str(cluster) for cluster in self.clusters]) + "\n"
+        return "\n".join([str(cluster) for cluster in self.clusters])
 
 
 class Cluster:
