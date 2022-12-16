@@ -73,11 +73,13 @@ vector *fillDataPoint(){
         curr_cord = curr_cord->next;
         curr_cord->next = NULL;
     }
+
+    free_cord(curr_cord);
     return head_vec;
 }
 
 void printVector(vector *v) {
-    while (v->next != NULL) {
+    while (v != NULL) {
         printCord(v->cords);
         v = v->next;
     }
@@ -162,8 +164,7 @@ cord **initializeKCenter(int k, vector *points_vector) {
     curr_cord = head_cord;
     curr_cord->next = NULL;
 
-    clusters = malloc(sizeof(k) * sizeof(cord));
-    clusters[i] = head_cord;
+    clusters = malloc(k * sizeof(cord*));
 
     points_vector_vector = points_vector;
     points_vector_cord = points_vector_vector->cords;
@@ -179,6 +180,7 @@ cord **initializeKCenter(int k, vector *points_vector) {
             points_vector_cord = points_vector_cord->next;
         }
 
+        clusters[i++] = head_cord;
         curr_cord->value = points_vector_cord->value;
 
         points_vector_vector = points_vector_vector->next;
@@ -187,10 +189,11 @@ cord **initializeKCenter(int k, vector *points_vector) {
         head_cord = malloc(sizeof(cord));
         curr_cord = head_cord;
         curr_cord->next = NULL;
-        clusters[++i] = head_cord;
+        
         k--;
     }
 
+    free_cord(head_cord);
     return clusters;
 }
 
@@ -249,7 +252,7 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     int i, j, min_index, l = num_of_cords_in_cord(points_vector->cords);
     double min_distance, current_distance;
 
-    updated_clusters = malloc(sizeof(k) * sizeof(cord));
+    updated_clusters = malloc(k * sizeof(cord*));
     num_of_cords_in_cluster = malloc(sizeof(int) * k);
 
     for (i = 0; i < k; i++) {
@@ -286,6 +289,7 @@ cord **create_updated_cluster(cord **clusters, int k, vector *points_vector) {
     } 
 
     normalize_updated_cluster(updated_clusters, num_of_cords_in_cluster, k);
+    free(num_of_cords_in_cluster);
     return updated_clusters;
 }
 
@@ -317,18 +321,22 @@ void print_cords_array(cord **cords, int len) {
 void free_vector(vector *v) {
     vector *tmp;
 
-    while (v != NULL) {
+    while (v->next != NULL) {
         tmp = v;
         free_cord(tmp->cords);
         v = v->next;
         free(tmp);
     }
+
+    free(v);
 }
 
 void free_cords_array(cord **arr, int len) {
     while (--len >= 0) {
         free_cord(arr[len]);
     }
+
+    free(arr);
 }
 
 void free_cord(cord *c) {
@@ -375,19 +383,20 @@ int main(int argc, char *argv[]){
     while (maxOfIter > 0) {
         updated_clusters = create_updated_cluster(clusters, k, pointsVector);
         if (check_epsilon_value(clusters, updated_clusters, k)) {
+            free_cords_array(clusters, k);
             clusters = updated_clusters;
             break;
         }
 
+        free_cords_array(clusters, k);
         clusters = updated_clusters;
         maxOfIter -= 1;
     }
 
-    print_cords_array(updated_clusters, k);
-    
+    print_cords_array(clusters, k);
+
     free_vector(pointsVector);
     free_cords_array(clusters, k);
-    free_cords_array(updated_clusters, k);
 
     return 0;
 }
