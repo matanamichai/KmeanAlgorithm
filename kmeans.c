@@ -6,7 +6,7 @@
 
 #define  _POSIX_C_SOURCE 200809L
 #define MAX_ITER 1000
-#define EPSILON 0.0001
+#define EPSILON 0.001
 
 typedef struct cord
 {
