@@ -9,22 +9,33 @@ class Kmeans:
     def __init__(self, k, input_file_name, iterations):
         self.data_points = self.parse_data_file(input_file_name)
         self.validate_parameters(k, self.data_points, iterations)
-        self.iterations = int(iterations)
-        self.clusters = self.create_clusters(int(k), self.data_points)
+        self.iterations = int(float(iterations))
+        self.clusters = self.create_clusters(int(float(k)), self.data_points)
         
 
     def validate_parameters(self, k, data_points, iterations):
-        if not k.isdecimal():
+        try:
+            is_natural = int(float(k)) == float(k)
+        except ValueError:
             raise ValueError("Invalid number of clusters!")
 
-        k = int(k)
+        if not is_natural:
+            raise ValueError("Invalid number of clusters!")
+
+        # in case k given with trailing zeroes
+        k = float(k)
         if k <= 1 or k >= len(data_points):
             raise ValueError("Invalid number of clusters!")
 
-        if not iterations.isdecimal():
+        try:
+            is_natural = int(float(iterations)) == float(iterations)
+        except ValueError:
             raise ValueError("Invalid number of iterations!")
 
-        iterations = int(iterations)
+        if not is_natural:
+            raise ValueError("Invalid number of iterations!")
+
+        iterations = float(iterations)
         if iterations <= 1 or iterations >= self.MAX_ITERATIONS:
             raise ValueError("Invalid number of iterations!")
 

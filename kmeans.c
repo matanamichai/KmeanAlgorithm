@@ -33,6 +33,7 @@ int check_epsilon_value(cord **clusters, cord **updated_clusters, int k);
 
 int validateIter(char *iter);
 int isNaturalNumber(char *c);
+int all_zeroes(char *c);
 int validateK(char *k, vector *pointsVector);
 
 void free_vector(vector *v);
@@ -143,7 +144,16 @@ int countPointsInVector(vector *v) {
 
 /* returns 0 if it is a natural number, and 1 otherwise */ 
 int isNaturalNumber(char *c) {
+    /* in case the first char is . */
+    if (*c == '.') {
+        return 1;
+    }
+    
     while (*c != '\0') {
+        if (*c == '.') {
+            return all_zeroes(++c); 
+        }
+
         if (isdigit(*c) == 0) {
             return 1;    
         }
@@ -153,6 +163,19 @@ int isNaturalNumber(char *c) {
 
     return 0;
 }
+
+int all_zeroes(char *c) {
+    while (*c != '\0') {
+        if (*c != '0') {
+            return 1;
+        }
+
+        c++;
+    }
+
+    return 0; 
+}
+
 
 cord **initializeKCenter(int k, vector *points_vector) {
     vector *points_vector_vector;
